@@ -4,5 +4,5 @@ include 'microservices:inventoryService'
 include 'microservices:OrderService'
 include 'microservices:PaymentService'
 include 'saga-common-events'
-
+include 'utils'
 
