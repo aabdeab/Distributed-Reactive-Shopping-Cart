@@ -1,4 +1,6 @@
 package com.javaSaga.Service;
+import com.javaSaga.UtilsClasses.Cart;
+import com.javaSaga.UtilsClasses.Product;
 import com.javaSaga.events.OrderCreationEvent;
 import com.javaSaga.events.OrderItemDto;
 import org.springframework.beans.factory.annotation.Autowired;

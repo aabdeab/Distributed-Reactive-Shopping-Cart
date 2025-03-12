@@ -1,4 +1,4 @@
-package com.javaSaga.Service;
+package com.javaSaga.UtilsClasses;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

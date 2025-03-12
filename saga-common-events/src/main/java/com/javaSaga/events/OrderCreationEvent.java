@@ -12,7 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class OrderCreationEvent {
-    private Long orderId;
     private Long userId;
     private List<OrderItemDto> items;
     private String status;

@@ -1,5 +1,7 @@
 package com.javaSaga.Service;
 
+import com.javaSaga.UtilsClasses.Cart;
+import com.javaSaga.UtilsClasses.Product;
 import reactor.core.publisher.Mono;
 
 public interface Cartinterface {

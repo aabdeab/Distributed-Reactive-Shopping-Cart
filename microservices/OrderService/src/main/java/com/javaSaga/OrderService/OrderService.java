@@ -1,5 +1,6 @@
 package com.javaSaga.OrderService;
 
+import com.javaSaga.Exceptions.EmptyCartException;
 import com.javaSaga.events.InventoryReservationEvent;
 import com.javaSaga.events.OrderCompletionEvent;
 import com.javaSaga.events.OrderCreationEvent;
@@ -8,6 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import com.javaSaga.UtilsClasses.Cart;
+import com.javaSaga.UtilsClasses.Product;
+
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -18,11 +24,13 @@ class OrderService {
 
     private final Map<Long, Order> orders = new HashMap<>();
     private long nextOrderId = 1L;
+    @Autowired
+    private WebClient.Builder webClientBuilder;
 
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    public Order createOrder(OrderCreationEvent event) {
+    public Mono<Order> createOrder(OrderCreationEvent event) {
         // Create a new order with PENDING status
         Order order = Order.builder()
                 .id(nextOrderId++)
@@ -44,7 +52,26 @@ class OrderService {
         kafkaTemplate.send("inventory-reservation-topic", reservationEvent);
 
         System.out.println("Order created and inventory reservation requested: " + order.getId());
-        return order;
+        return Mono.just(order);
+    }
+    public Mono<Object> checkout(){
+        return webClientBuilder.build()
+                .get()
+                .uri("http://localhost:8080/api/cart")
+                .retrieve()
+                .bodyToMono(Cart.class)
+                .flatMap(cart -> {
+                    System.out.println("la carte contient " + cart.getProducts().size()+"produits");
+                    if(cart.getProducts().size()==0){
+                        return Mono.error(new EmptyCartException("checkout failed.Your Cart is Still Empty"));
+                    }
+                    else{
+                        return createOrder()
+                    }
+
+                })
+                .doOnError(error -> System.err.println("Failed to create order: " + error.getMessage()))
+                .then();
     }
 
     public Order getOrder(Long orderId) {

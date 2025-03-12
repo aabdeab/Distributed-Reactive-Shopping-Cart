@@ -1,9 +1,10 @@
 package com.javaSaga.OrderService;
 import com.javaSaga.events.*;
+import jakarta.validation.constraints.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
-
+import reactor.core.publisher.Mono;
 
 
 @RestController
@@ -13,13 +14,14 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping
-    public Order createOrder(@RequestBody OrderCreationEvent orderEvent) {
-        return orderService.createOrder(orderEvent);
-    }
 
     @GetMapping("/{orderId}")
     public Order getOrder(@PathVariable Long orderId) {
         return orderService.getOrder(orderId);
+    }
+
+    @PostMapping("/checkout")
+    public Mono<Order> createOrder(){
+        return Mono.just(orderService.createOrder());
     }
 }
