@@ -21,7 +21,7 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
-    public Mono<Order> createOrder(){
-        return Mono.just(orderService.createOrder());
+    public Mono<Void> createOrder(){
+        return orderService.checkout();
     }
 }
