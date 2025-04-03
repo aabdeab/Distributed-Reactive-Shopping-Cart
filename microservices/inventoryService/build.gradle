@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-	implementation project(':saga-common-events')
+	implementation project(':API')
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

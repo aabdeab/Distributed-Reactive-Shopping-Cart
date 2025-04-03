@@ -1,7 +1,7 @@
 package com.javaSaga.PaymentService;
 
-import com.javaSaga.events.OrderCompletionEvent;
-import com.javaSaga.events.PaymentEvent;
+import com.javaSaga.events.Events.OrderCompletionEvent;
+import com.javaSaga.events.Events.PaymentEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;

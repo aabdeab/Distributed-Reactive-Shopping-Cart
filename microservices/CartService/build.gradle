@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-	implementation project(':saga-common-events')
+	implementation project(':API')
 	implementation project(':utils')
 }
 

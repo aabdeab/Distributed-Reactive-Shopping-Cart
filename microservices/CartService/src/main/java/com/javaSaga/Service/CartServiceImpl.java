@@ -1,8 +1,8 @@
 package com.javaSaga.Service;
-import com.javaSaga.UtilsClasses.Cart;
-import com.javaSaga.UtilsClasses.Product;
-import com.javaSaga.events.OrderCreationEvent;
-import com.javaSaga.events.OrderItemDto;
+import com.javaSaga.events.Models.Cart;
+import com.javaSaga.events.Models.Product;
+import com.javaSaga.events.Events.OrderCreationEvent;
+import com.javaSaga.events.DTOs.OrderItemDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

@@ -1,6 +1,6 @@
 package com.javaSaga.OrderService;
 
-import com.javaSaga.events.OrderItemDto;
+import com.javaSaga.events.DTOs.OrderItemDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

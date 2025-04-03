@@ -1,27 +1,27 @@
 package com.javaSaga.OrderService;
 
+import com.javaSaga.events.Events.InventoryReservationEvent;
+import com.javaSaga.events.Events.OrderCompletionEvent;
+import com.javaSaga.events.Events.OrderCreationEvent;
+import com.javaSaga.events.Events.PaymentEvent;
+import com.javaSaga.events.DTOs.OrderItemDto;
 import com.javaSaga.Exceptions.EmptyCartException;
-import com.javaSaga.events.InventoryReservationEvent;
-import com.javaSaga.events.OrderCompletionEvent;
-import com.javaSaga.events.OrderCreationEvent;
-import com.javaSaga.events.PaymentEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import com.javaSaga.UtilsClasses.Cart;
-import com.javaSaga.UtilsClasses.Product;
-
-
+import com.javaSaga.events.Models.Cart;
+import com.javaSaga.events.Models.Product;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 class OrderService {
-
     private final Map<Long, Order> orders = new HashMap<>();
     private long nextOrderId = 1L;
     @Autowired
@@ -31,7 +31,6 @@ class OrderService {
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     public Mono<Order> createOrder(OrderCreationEvent event) {
-        // Create a new order with PENDING status
         Order order = Order.builder()
                 .id(nextOrderId++)
                 .userId(event.getUserId())
@@ -42,8 +41,6 @@ class OrderService {
                 .build();
 
         orders.put(order.getId(), order);
-
-        // Publish inventory reservation request to Kafka
         InventoryReservationEvent reservationEvent = InventoryReservationEvent.builder()
                 .orderId(order.getId())
                 .items(order.getItems())
@@ -54,24 +51,41 @@ class OrderService {
         System.out.println("Order created and inventory reservation requested: " + order.getId());
         return Mono.just(order);
     }
-    public Mono<Object> checkout(){
+
+    public Mono<Void> checkout() {
         return webClientBuilder.build()
                 .get()
                 .uri("http://localhost:8080/api/cart")
                 .retrieve()
                 .bodyToMono(Cart.class)
                 .flatMap(cart -> {
-                    System.out.println("la carte contient " + cart.getProducts().size()+"produits");
-                    if(cart.getProducts().size()==0){
+                    System.out.println("la carte contient " + cart.getProducts().size() + "produits");
+                    if (cart.getProducts().size() == 0) {
                         return Mono.error(new EmptyCartException("checkout failed.Your Cart is Still Empty"));
+                    } else {
+                        double totalAmount = cart.getProducts().stream()
+                                .mapToDouble(Product::getPrice)
+                                .sum();
+                        List<OrderItemDto> orderItems = cart.getProducts().stream()
+                                .map(p -> OrderItemDto.builder()
+                                        .productId(p.getId())
+                                        .productName(p.getName())
+                                        .price(p.getPrice())
+                                        .quantity(1) // Assuming quantity 1 for simplicity
+                                        .build())
+                                .collect(Collectors.toList());
+                        OrderCreationEvent order = OrderCreationEvent.builder()
+                                .userId(cart.getUserId())
+                                .status("CREATED")
+                                .items(orderItems)
+                                .totalAmount(totalAmount)
+                                .build();
+                        return createOrder(order);
                     }
-                    else{
-                        return createOrder()
-                    }
-
                 })
                 .doOnError(error -> System.err.println("Failed to create order: " + error.getMessage()))
                 .then();
+
     }
 
     public Order getOrder(Long orderId) {
@@ -87,10 +101,7 @@ class OrderService {
         }
 
         if ("SUCCESS".equals(event.getStatus())) {
-            // Update order status
             order.setStatus("INVENTORY_RESERVED");
-
-            // Request payment
             PaymentEvent paymentEvent = PaymentEvent.builder()
                     .orderId(order.getId())
                     .userId(order.getUserId())
@@ -100,11 +111,9 @@ class OrderService {
             kafkaTemplate.send("payment-request-topic", paymentEvent);
             System.out.println("Inventory reserved, payment requested for order: " + order.getId());
         } else {
-            // Inventory reservation failed
             order.setStatus("FAILED");
             order.setFailureReason(event.getReason());
 
-            // Notify about order failure
             OrderCompletionEvent completionEvent = OrderCompletionEvent.builder()
                     .orderId(order.getId())
                     .status("FAILED")
@@ -123,13 +132,10 @@ class OrderService {
             System.err.println("Order not found: " + event.getOrderId());
             return;
         }
-
         if ("SUCCESS".equals(event.getStatus())) {
-            // Update order status
             order.setStatus("COMPLETED");
             order.setTransactionId(event.getTransactionId());
 
-            // Notify all services about successful completion
             OrderCompletionEvent completionEvent = OrderCompletionEvent.builder()
                     .orderId(order.getId())
                     .status("COMPLETED")
@@ -138,11 +144,9 @@ class OrderService {
             kafkaTemplate.send("order-completion-topic", completionEvent);
             System.out.println("Order completed successfully: " + order.getId());
         } else {
-            // Payment failed
             order.setStatus("FAILED");
             order.setFailureReason("Payment failed: " + event.getReason());
 
-            // Release inventory (compensating transaction)
             InventoryReservationEvent releaseEvent = InventoryReservationEvent.builder()
                     .orderId(order.getId())
                     .items(order.getItems())
@@ -151,7 +155,6 @@ class OrderService {
 
             kafkaTemplate.send("inventory-release-topic", releaseEvent);
 
-            // Notify about order failure
             OrderCompletionEvent completionEvent = OrderCompletionEvent.builder()
                     .orderId(order.getId())
                     .status("FAILED")

@@ -1,8 +1,8 @@
 package com.javaSaga.Service;
 
 import com.javaSaga.Exceptions.ProductNotFoundException;
-import com.javaSaga.UtilsClasses.Cart;
-import com.javaSaga.UtilsClasses.Product;
+import com.javaSaga.events.Models.Cart;
+import com.javaSaga.events.Models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;

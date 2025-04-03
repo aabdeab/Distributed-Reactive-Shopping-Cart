@@ -1,4 +1,4 @@
-package com.javaSaga.events;
+package com.javaSaga.events.Events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OrderCompletionEvent {
+public class PaymentEvent {
     private Long orderId;
-    private String status; // COMPLETED, FAILED
+    private Long userId;
+    private double amount;
+    private String status; // SUCCESS or FAILED
+    private String transactionId;
     private String reason; // If FAILED
 }

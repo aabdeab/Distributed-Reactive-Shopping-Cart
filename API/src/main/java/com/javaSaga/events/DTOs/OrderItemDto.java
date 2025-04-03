@@ -1,4 +1,4 @@
-package com.javaSaga.events;
+package com.javaSaga.events.DTOs;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

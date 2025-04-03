@@ -1,4 +1,4 @@
-package com.javaSaga.UtilsClasses;
+package com.javaSaga.events.Models;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

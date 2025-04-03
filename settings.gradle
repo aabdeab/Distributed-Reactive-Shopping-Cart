@@ -3,6 +3,7 @@ include 'microservices:CartService'
 include 'microservices:inventoryService'
 include 'microservices:OrderService'
 include 'microservices:PaymentService'
-include 'saga-common-events'
+include 'API'
 include 'utils'
+include 'Infrastructure'
 
