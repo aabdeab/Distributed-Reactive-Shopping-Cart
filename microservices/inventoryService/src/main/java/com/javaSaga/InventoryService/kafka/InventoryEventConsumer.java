@@ -1,5 +1,5 @@
 // File: InventoryEventConsumer.java
-package com.javaSaga.InventoryService.KafkaSubs;
+package com.javaSaga.InventoryService.kafka;
 
 import com.javaSaga.InventoryService.InventoryServiceImpl;
 import com.javaSaga.events.Events.InventoryReservationEvent;

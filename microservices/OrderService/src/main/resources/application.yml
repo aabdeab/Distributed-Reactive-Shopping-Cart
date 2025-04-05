@@ -1,9 +1,18 @@
 server:
   port: 8081
 
+
+#Enable Eureka Server Registration
 spring:
   application:
     name: order-service
+  cloud:
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://localhost:8761/eureka/
+      discovery:
+        enabled: true
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -22,15 +31,3 @@ logging:
     root: INFO
     com.javaSaga: DEBUG
 
-topics:
-  payment-request: payment-request-topic
-  payment-response: payment-response-topic
-  inventory-request: inventory-request-topic
-  inventory-response: inventory-response-topic
-  order-completion: order-completion-topic
-
-services:
-  inventory-service:
-    url: http://localhost:8082/api/inventory
-  payment-service:
-    url: http://localhost:8083/api/payments

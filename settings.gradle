@@ -6,4 +6,6 @@ include 'microservices:PaymentService'
 include 'API'
 include 'utils'
 include 'Infrastructure'
+include 'Infrastructure:EurekaServer'
+findProject(':Infrastructure:EurekaServer')?.name = 'EurekaServer'
 

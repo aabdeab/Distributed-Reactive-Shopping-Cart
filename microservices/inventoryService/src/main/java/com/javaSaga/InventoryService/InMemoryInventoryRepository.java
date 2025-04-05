@@ -1,23 +1,23 @@
 package com.javaSaga.InventoryService;
 
+import com.javaSaga.events.DTOs.OrderItemDto;
 import com.javaSaga.events.Models.InventoryItem;
 import com.javaSaga.events.Models.Reservation;
 import com.javaSaga.events.repositories.InventoryRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryInventoryRepository implements InventoryRepository {
-    private final Map<Long, InventoryItem> inventory = new HashMap<>();
+
+    // In-memory inventory and reservation storage
+    private final Map<Long, InventoryItem> inventory = new ConcurrentHashMap<>();
     private final Map<Long, Reservation> reservations = new ConcurrentHashMap<>();
+
     public InMemoryInventoryRepository() {
         inventory.put(1L, new InventoryItem(1L, "Product 1", 100));
         inventory.put(2L, new InventoryItem(2L, "Product 2", 50));
@@ -27,6 +27,11 @@ public class InMemoryInventoryRepository implements InventoryRepository {
     @Override
     public Optional<InventoryItem> findItemById(Long productId) {
         return Optional.ofNullable(inventory.get(productId));
+    }
+
+    @Override
+    public Optional<Reservation> findReservationById(Long orderId) {
+        return Optional.ofNullable(reservations.get(orderId));
     }
 
     @Override
@@ -51,11 +56,6 @@ public class InMemoryInventoryRepository implements InventoryRepository {
     @Override
     public void saveReservation(Reservation reservation) {
         reservations.put(reservation.getOrderId(), reservation);
-    }
-
-    @Override
-    public Optional<Reservation> findReservationByOrderId(Long orderId) {
-        return Optional.ofNullable(reservations.get(orderId));
     }
 
     @Override

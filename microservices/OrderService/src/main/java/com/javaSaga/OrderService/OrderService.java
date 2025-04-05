@@ -71,7 +71,7 @@ class OrderService {
                                         .productId(p.getId())
                                         .productName(p.getName())
                                         .price(p.getPrice())
-                                        .quantity(1) // Assuming quantity 1 for simplicity
+                                        .Quantity(1) // Assuming quantity 1 for simplicity
                                         .build())
                                 .collect(Collectors.toList());
                         OrderCreationEvent order = OrderCreationEvent.builder()

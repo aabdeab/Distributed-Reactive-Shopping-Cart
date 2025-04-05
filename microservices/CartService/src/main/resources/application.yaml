@@ -1,9 +1,20 @@
 server:
   port: 8080
 
+
+#Enable Eureka Server Registration
 spring:
   application:
     name: cart-service
+  cloud:
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://localhost:8761/eureka/
+      discovery:
+        enabled: true
+
+#Configure kafka
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -23,6 +34,3 @@ logging:
     com.javaSaga: DEBUG
     org.springframework.web.reactive.function.client: DEBUG
 
-services:
-  order-service:
-    url: http://localhost:8081/api/orders

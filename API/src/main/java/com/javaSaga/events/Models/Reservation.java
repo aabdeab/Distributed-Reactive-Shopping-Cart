@@ -10,8 +10,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class Reservation {
-    private Long orderId;
-    private List<OrderItemDto> items;
-    private LocalDateTime reservationTime;
-    private LocalDateTime expiryTime;
+  private Long orderId;
+  private List<OrderItemDto> items;
+  private LocalDateTime reservationTime;
+  private LocalDateTime expiryTime;
 }

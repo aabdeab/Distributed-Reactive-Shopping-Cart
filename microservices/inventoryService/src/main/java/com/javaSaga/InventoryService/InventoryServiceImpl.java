@@ -1,6 +1,6 @@
-// File: InventoryService.java
 package com.javaSaga.InventoryService;
-import com.javaSaga.InventoryService.KafkaSubs.InventoryEventProducer;
+
+import com.javaSaga.InventoryService.kafka.InventoryEventProducer;
 import com.javaSaga.events.DTOs.OrderItemDto;
 import com.javaSaga.events.Events.InventoryReservationEvent;
 import com.javaSaga.events.Events.OrderCompletionEvent;
@@ -34,47 +34,52 @@ public class InventoryServiceImpl implements InventoryService {
         boolean allItemsAvailable = true;
         StringBuilder failureReason = new StringBuilder();
 
-        // Check inventory availability
         for (OrderItemDto item : event.getItems()) {
             Optional<InventoryItem> inventoryItemOpt = inventoryRepository.findItemById(item.getProductId());
 
-            if (inventoryItemOpt.isEmpty() || inventoryItemOpt.get().getAvailableQuantity() < item.getQuantity()) {
+            if (inventoryItemOpt.isEmpty()) {
                 allItemsAvailable = false;
-                failureReason.append("Insufficient inventory for product ")
-                        .append(item.getProductName())
-                        .append(" with quantity ")
-                        .append(item.getQuantity())
-                        .append(". ");
+                failureReason.append("Product not found: ").append(item.getProductName()).append(". ");
+            } else {
+                InventoryItem inventoryItem = inventoryItemOpt.get();
+                int reservedAcrossOrders = inventoryItem.getReservedQuantity();
+                int available = inventoryItem.getAvailableQuantity();
+
+                if (available - reservedAcrossOrders < item.getQuantity()) {
+                    allItemsAvailable = false;
+                    failureReason.append("Insufficient inventory for product ")
+                            .append(item.getProductName())
+                            .append(". Requested: ").append(item.getQuantity())
+                            .append(", Available: ").append(available - reservedAcrossOrders)
+                            .append(". ");
+                }
             }
         }
 
         if (allItemsAvailable) {
-            createReservation(event);
+            createOrUpdateReservation(event);
         } else {
             sendFailureResponse(event, failureReason.toString());
         }
     }
 
-    private void createReservation(InventoryReservationEvent event) {
-        // Create reservation
+    private void createOrUpdateReservation(InventoryReservationEvent event) {
         Reservation reservation = new Reservation();
         reservation.setOrderId(event.getOrderId());
         reservation.setItems(event.getItems());
         reservation.setReservationTime(LocalDateTime.now());
         reservation.setExpiryTime(LocalDateTime.now().plusMinutes(15));
 
-        // Update inventory
         for (OrderItemDto item : event.getItems()) {
-            inventoryRepository.findItemById(item.getProductId())
-                    .ifPresent(inventoryItem -> {
-                        inventoryItem.setReservedQuantity(inventoryItem.getReservedQuantity() + item.getQuantity());
-                        inventoryRepository.saveItem(inventoryItem);
-                    });
+            inventoryRepository.findItemById(item.getProductId()).ifPresent(inventoryItem -> {
+                int updatedReserved = inventoryItem.getReservedQuantity() + item.getQuantity();
+                int updatedAvailable = inventoryItem.getAvailableQuantity();
+                inventoryRepository.updateItemQuantity(item.getProductId(), updatedAvailable, updatedReserved);
+            });
         }
 
         inventoryRepository.saveReservation(reservation);
 
-        // Send success response
         InventoryReservationEvent responseEvent = InventoryReservationEvent.builder()
                 .orderId(event.getOrderId())
                 .items(event.getItems())
@@ -99,14 +104,14 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Transactional
     public void releaseReservation(Long orderId) {
-        inventoryRepository.findReservationByOrderId(orderId)
+        inventoryRepository.findReservationById(orderId)
                 .ifPresent(reservation -> {
                     for (OrderItemDto item : reservation.getItems()) {
-                        inventoryRepository.findItemById(item.getProductId())
-                                .ifPresent(inventoryItem -> {
-                                    inventoryItem.setReservedQuantity(inventoryItem.getReservedQuantity() - item.getQuantity());
-                                    inventoryRepository.saveItem(inventoryItem);
-                                });
+                        inventoryRepository.findItemById(item.getProductId()).ifPresent(inventoryItem -> {
+                            int updatedReserved = inventoryItem.getReservedQuantity() - item.getQuantity();
+                            int updatedAvailable = inventoryItem.getAvailableQuantity();
+                            inventoryRepository.updateItemQuantity(item.getProductId(), updatedAvailable, updatedReserved);
+                        });
                     }
                     inventoryRepository.deleteReservation(orderId);
                 });
@@ -123,21 +128,19 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     private void confirmReservation(Long orderId) {
-        inventoryRepository.findReservationByOrderId(orderId)
+        inventoryRepository.findReservationById(orderId)
                 .ifPresent(reservation -> {
                     for (OrderItemDto item : reservation.getItems()) {
-                        inventoryRepository.findItemById(item.getProductId())
-                                .ifPresent(inventoryItem -> {
-                                    int newAvailable = inventoryItem.getAvailableQuantity() - item.getQuantity();
-                                    int newReserved = inventoryItem.getReservedQuantity() - item.getQuantity();
-                                    inventoryRepository.updateItemQuantity(item.getProductId(), newAvailable, newReserved);
-                                });
+                        inventoryRepository.findItemById(item.getProductId()).ifPresent(inventoryItem -> {
+                            int newReserved = inventoryItem.getReservedQuantity() - item.getQuantity();
+                            inventoryRepository.updateItemQuantity(item.getProductId(), inventoryItem.getAvailableQuantity(), newReserved);
+                        });
                     }
                     inventoryRepository.deleteReservation(orderId);
                     System.out.println("Inventory confirmed for completed order: " + orderId);
                 });
     }
-    // Run every minute
+
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void checkExpiredReservations() {
@@ -149,7 +152,6 @@ public class InventoryServiceImpl implements InventoryService {
 
             releaseReservation(orderId);
 
-            // Notify OrderService about expired reservation
             OrderCompletionEvent completionEvent = OrderCompletionEvent.builder()
                     .orderId(orderId)
                     .status("FAILED")

@@ -8,12 +8,14 @@ import java.util.Optional;
 
 public interface InventoryRepository {
     Optional<InventoryItem> findItemById(Long productId);
+
+    Optional<Reservation> findReservationById(Long productId);
+
     List<InventoryItem> findAllItems();
     void saveItem(InventoryItem item);
     void updateItemQuantity(Long productId, int availableQuantity, int reservedQuantity);
 
     void saveReservation(Reservation reservation);
-    Optional<Reservation> findReservationByOrderId(Long orderId);
     void deleteReservation(Long orderId);
     List<Reservation> findExpiredReservations();
 }

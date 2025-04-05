@@ -21,6 +21,7 @@ repositories {
 dependencies {
 	implementation project(':API')
 	implementation project(':utils')
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 }
 
 tasks.named('test') {
