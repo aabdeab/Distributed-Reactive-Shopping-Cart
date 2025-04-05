@@ -34,12 +34,6 @@ public class CartController {
                 .onErrorResume(e -> Mono.error(new ProductNotFoundException("Product not found")));
     }
 
-
-    @PostMapping("/checkout")
-    public Mono<String> checkout() {
-        return cartService.checkout()
-                .thenReturn("Commande en cours de traitement");
-    }
     @DeleteMapping
     public Mono<String> removeProducts() {
         return cartService.getCart()

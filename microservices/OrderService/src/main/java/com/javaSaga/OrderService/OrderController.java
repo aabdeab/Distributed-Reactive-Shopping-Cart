@@ -21,7 +21,8 @@ public class OrderController {
     }
 
     @PostMapping("/checkout")
-    public Mono<Void> createOrder(){
-        return orderService.checkout();
+    public Mono<String> createOrder(){
+        return orderService.checkout().thenReturn("Commande en cours de traitement");
+
     }
 } 

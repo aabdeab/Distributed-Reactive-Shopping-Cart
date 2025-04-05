@@ -12,5 +12,4 @@ public interface Cartinterface {
 
     Mono<Void> removeProduct(Long productId);
 
-    Mono<Void> checkout();
 }
