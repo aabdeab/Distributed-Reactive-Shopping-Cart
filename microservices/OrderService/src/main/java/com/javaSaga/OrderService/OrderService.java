@@ -7,6 +7,7 @@ import com.javaSaga.events.Events.PaymentEvent;
 import com.javaSaga.events.DTOs.OrderItemDto;
 import com.javaSaga.Exceptions.EmptyCartException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -26,9 +27,16 @@ class OrderService {
     private long nextOrderId = 1L;
     @Autowired
     private WebClient.Builder webClientBuilder;
-
+    @Autowired
+    private LoadBalancerClient loadBalancerClient;
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
+
+
+    //I put this method to retrieve CartServiceURL
+    private String getCartServiceUrl() {
+        return loadBalancerClient.choose("cart-service").getUri().toString();
+    }
 
     public Mono<Order> createOrder(OrderCreationEvent event) {
         Order order = Order.builder()
@@ -51,16 +59,16 @@ class OrderService {
         System.out.println("Order created and inventory reservation requested: " + order.getId());
         return Mono.just(order);
     }
-
     public Mono<Void> checkout() {
+        String cartServiceUrl = getCartServiceUrl();
         return webClientBuilder.build()
                 .get()
-                .uri("http://localhost:8080/api/cart")
+                .uri(cartServiceUrl+"/api/cart")
                 .retrieve()
                 .bodyToMono(Cart.class)
                 .flatMap(cart -> {
                     System.out.println("la carte contient " + cart.getProducts().size() + "produits");
-                    if (cart.getProducts().size() == 0) {
+                    if (cart.getProducts().isEmpty()) {
                         return Mono.error(new EmptyCartException("checkout failed.Your Cart is Still Empty"));
                     } else {
                         double totalAmount = cart.getProducts().stream()
