@@ -59,7 +59,7 @@ services:
 
   inventory-service:
     build:
-      context: ./microservices/InventoryService
+      context: ./microservices/inventoryService
       dockerfile: Dockerfile
     ports:
       - "8083:8083"

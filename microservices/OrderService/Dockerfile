@@ -8,6 +8,6 @@ COPY --from=builder /extracted/dependencies/ ./
 COPY --from=builder /extracted/spring-boot-loader/ ./
 COPY --from=builder /extracted/snapshot-dependencies/ ./
 COPY --from=builder /extracted/application/ ./
-ENV SERVER_PORT=8082
+ENV SERVER_PORT=8081
 EXPOSE $SERVER_PORT
 ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
