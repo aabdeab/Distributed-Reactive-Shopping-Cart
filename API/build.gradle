@@ -5,6 +5,13 @@ plugins {
 group = 'com.javaSaga'
 version = '0.0.1-SNAPSHOT'
 
+//I added this ligne to ensure that JVM  version is 17 to garantee version compatibility 
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
 repositories {
     mavenCentral()
 }

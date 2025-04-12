@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
@@ -32,8 +33,10 @@ services:
       - "8081:8081"
     depends_on:
       - kafka
+      - eureka-server
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
 
   cart-service:
     build:
@@ -43,8 +46,10 @@ services:
       - "8080:8080"
     depends_on:
       - kafka
+      - eureka-server
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
 
   payment-service:
     build:
@@ -54,8 +59,10 @@ services:
       - "8082:8082"
     depends_on:
       - kafka
+      - eureka-server
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
 
   inventory-service:
     build:
@@ -65,5 +72,17 @@ services:
       - "8083:8083"
     depends_on:
       - kafka
+      - eureka-server
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+
+  eureka-server:
+    build:
+      context: ./Infrastructure/EurekaServer
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_SERVER_ENABLED=true
