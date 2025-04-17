@@ -10,4 +10,4 @@ COPY --from=builder /extracted/snapshot-dependencies/ ./
 COPY --from=builder /extracted/application/ ./
 ENV SERVER_PORT=8080
 EXPOSE $SERVER_PORT
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

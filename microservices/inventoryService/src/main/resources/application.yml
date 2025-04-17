@@ -1,9 +1,16 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
   application:
     name: inventory-service
+  cloud:
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://localhost:8761/eureka/
+      instance:
+        prefer-ip-address: true
   kafka:
     bootstrap-servers: localhost:9092
     producer:
@@ -22,6 +29,15 @@ logging:
     root: INFO
     com.javaSaga: DEBUG
 
-topics:
-  inventory-request: inventory-request-topic
-  inventory-response: inventory-response-topic
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  cloud:
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://eureka-server:8761/eureka/
+  kafka:
+    bootstrap-servers: kafka:9092

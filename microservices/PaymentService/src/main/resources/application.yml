@@ -1,16 +1,23 @@
 server:
-  port: 8083
+  port: 8082
 
 spring:
   application:
-    name: inventory-service
+    name: payment-service
+  cloud:
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://localhost:8761/eureka/
+      instance:
+        prefer-ip-address: true
   kafka:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      group-id: inventory-service-group
+      group-id: payment-service-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -22,6 +29,15 @@ logging:
     root: INFO
     com.javaSaga: DEBUG
 
-topics:
-  inventory-request: inventory-request-topic
-  inventory-response: inventory-response-topic
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  cloud:
+    eureka:
+      client:
+        service-url:
+          defaultZone: http://eureka-server:8761/eureka/
+  kafka:
+    bootstrap-servers: kafka:9092

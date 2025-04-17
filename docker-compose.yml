@@ -10,6 +10,8 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - "2181:2181"
+    networks:
+      - shared-net
 
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -24,8 +26,11 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - shared-net
 
   order-service:
+    container_name: order-service
     build:
       context: ./microservices/OrderService
       dockerfile: Dockerfile
@@ -35,10 +40,14 @@ services:
       - kafka
       - eureka-server
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_CLOUD_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - shared-net
 
   cart-service:
+    container_name: cart-service
     build:
       context: ./microservices/CartService
       dockerfile: Dockerfile
@@ -48,10 +57,14 @@ services:
       - kafka
       - eureka-server
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_CLOUD_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - shared-net
 
   payment-service:
+    container_name: payment-service
     build:
       context: ./microservices/PaymentService
       dockerfile: Dockerfile
@@ -61,10 +74,14 @@ services:
       - kafka
       - eureka-server
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_CLOUD_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - shared-net
 
   inventory-service:
+    container_name: inventory-service
     build:
       context: ./microservices/inventoryService
       dockerfile: Dockerfile
@@ -74,8 +91,11 @@ services:
       - kafka
       - eureka-server
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - EUREKA_SERVER=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_CLOUD_EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    networks:
+      - shared-net
 
   eureka-server:
     build:
@@ -85,4 +105,11 @@ services:
     ports:
       - "8761:8761"
     environment:
+      - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_SERVER_ENABLED=true
+    networks:
+      - shared-net
+
+networks:
+  shared-net:
+    driver: bridge

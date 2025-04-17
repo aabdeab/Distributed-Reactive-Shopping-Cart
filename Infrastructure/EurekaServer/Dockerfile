@@ -9,5 +9,6 @@ COPY --from=builder /extracted/spring-boot-loader/ ./
 COPY --from=builder /extracted/snapshot-dependencies/ ./
 COPY --from=builder /extracted/application/ ./
 ENV SERVER_PORT=8761
+ENV SPRING_PROFILES_ACTIVE=docker
 EXPOSE $SERVER_PORT
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

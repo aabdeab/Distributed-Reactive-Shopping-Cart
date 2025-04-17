@@ -43,7 +43,6 @@ subprojects {
 		compileOnly 'org.projectlombok:lombok'
 		developmentOnly 'org.springframework.boot:spring-boot-devtools'
 		annotationProcessor 'org.projectlombok:lombok'
-		providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 		testImplementation 'io.projectreactor:reactor-test'
 		testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'

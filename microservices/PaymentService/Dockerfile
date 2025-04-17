@@ -9,5 +9,6 @@ COPY --from=builder /extracted/spring-boot-loader/ ./
 COPY --from=builder /extracted/snapshot-dependencies/ ./
 COPY --from=builder /extracted/application/ ./
 ENV SERVER_PORT=8083
+# The following line is used to set the server port for the application.
 EXPOSE $SERVER_PORT
-ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
