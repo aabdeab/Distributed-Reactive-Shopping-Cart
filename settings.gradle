@@ -8,4 +8,6 @@ include 'utils'
 include 'Infrastructure'
 include 'Infrastructure:EurekaServer'
 findProject(':Infrastructure:EurekaServer')?.name = 'EurekaServer'
+include 'Infrastructure:Consul'
+findProject(':Infrastructure:Consul')?.name = 'Consul'
 

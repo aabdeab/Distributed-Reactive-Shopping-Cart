@@ -25,12 +25,8 @@ public class PaymentService {
     @KafkaListener(topics = "payment-request-topic")
     public void handlePaymentRequest(PaymentEvent event) {
         System.out.println("Payment request received for order: " + event.getOrderId());
-
-        // Simulate payment processing
-        boolean paymentSuccess = random.nextDouble() > 0.1; // 90% success rate
-
+        boolean paymentSuccess = random.nextDouble() > 0.1;
         if (paymentSuccess) {
-            // Create payment record
             Payment payment = Payment.builder()
                     .orderId(event.getOrderId())
                     .userId(event.getUserId())
@@ -41,8 +37,6 @@ public class PaymentService {
                     .build();
 
             payments.put(event.getOrderId(), payment);
-
-            // Send success response
             PaymentEvent responseEvent = PaymentEvent.builder()
                     .orderId(event.getOrderId())
                     .userId(event.getUserId())
@@ -69,7 +63,6 @@ public class PaymentService {
     @KafkaListener(topics = "order-completion-topic")
     public void handleOrderCompletion(OrderCompletionEvent event) {
         if ("FAILED".equals(event.getStatus())) {
-            // If order failed after payment was successful, process refund
             Payment payment = payments.get(event.getOrderId());
             if (payment != null && "COMPLETED".equals(payment.getStatus())) {
                 payment.setStatus("REFUNDED");
