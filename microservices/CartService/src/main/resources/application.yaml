@@ -8,7 +8,7 @@ spring:
     eureka:
       client:
         service-url:
-          defaultZone: http://localhost:8761/eureka/
+          defaultZone: http://eureka-server:8761/eureka/
       instance:
         prefer-ip-address: true
   kafka:
@@ -35,10 +35,14 @@ spring:
   config:
     activate:
       on-profile: docker
-  cloud:
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://eureka-server:8761/eureka/
   kafka:
     bootstrap-servers: kafka:9092
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/
+logging:
+  level:
+    root: INFO
+    com.javaSaga: DEBUG
+    org.springframework.web.reactive.function.client: DEBUG

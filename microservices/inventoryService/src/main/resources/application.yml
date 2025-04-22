@@ -34,10 +34,9 @@ spring:
   config:
     activate:
       on-profile: docker
-  cloud:
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://eureka-server:8761/eureka/
   kafka:
     bootstrap-servers: kafka:9092
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka-server:8761/eureka/

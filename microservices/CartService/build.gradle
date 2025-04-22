@@ -21,6 +21,7 @@ dependencies {
 	implementation project(':API')
 	implementation project(':utils')
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+	implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
 }
 
 tasks.named('test') {
